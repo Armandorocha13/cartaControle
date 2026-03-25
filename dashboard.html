@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toolkit Control Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: rgba(30, 41, 59, 0.7);
+            --text: #f8fafc;
+            --muted: #94a3b8;
+            --blue: #3b82f6;
+            --green: #10b981;
+            --red: #ef4444;
+            --border: rgba(255,255,255,0.1);
+        }
+        * { box-sizing:border-box; margin:0; padding:0; font-family:'Inter',sans-serif; }
+        body {
+            background: var(--bg);
+            background-image: radial-gradient(circle at top right, #1e293b 0%, #0f172a 100%);
+            color: var(--text); min-height:100vh;
+            display:flex; flex-direction:column; align-items:center; padding:2rem;
+        }
+        header { width:100%; max-width:1300px; text-align:center; margin-bottom:2rem; animation:fadeDown .8s ease; }
+        h1 {
+            font-size:2.4rem; font-weight:700;
+            background: -webkit-linear-gradient(45deg, var(--blue), var(--green));
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:.5rem;
+        }
+        p.subtitle { color:var(--muted); font-size:1rem; }
+        .wrap { width:100%; max-width:1300px; display:grid; grid-template-columns:320px 1fr; gap:1.5rem; animation:fadeUp 1s ease; }
+        .glass {
+            background:var(--card); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+            border:1px solid var(--border); border-radius:16px; padding:1.5rem; box-shadow:0 10px 30px rgba(0,0,0,.5);
+        }
+        .sidebar { display:flex; flex-direction:column; gap:1.2rem; overflow-y:auto; max-height:85vh; }
+        .sidebar::-webkit-scrollbar { width:5px; }
+        .sidebar::-webkit-scrollbar-thumb { background:var(--muted); border-radius:3px; }
+        label { display:block; margin-bottom:.3rem; font-size:.8rem; font-weight:600; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); }
+        select {
+            width:100%; padding:.65rem 1rem; border-radius:8px;
+            background:rgba(15,23,42,.85); border:1px solid var(--border);
+            color:var(--text); font-size:.9rem; outline:none; cursor:pointer; transition:border-color .2s;
+        }
+        select:focus { border-color:var(--blue); }
+        .legend-box { display:flex; gap:1rem; flex-wrap:wrap; margin-top:.5rem; }
+        .leg { display:flex; align-items:center; gap:.4rem; font-size:.8rem; }
+        .dot { width:12px; height:12px; border-radius:50%; }
+        .badge {
+            margin-top:auto; padding:.75rem; font-size:.75rem; color:var(--green);
+            text-align:center; background:rgba(16,185,129,.1); border-radius:8px;
+        }
+        .chart-box { position:relative; height:500px; }
+        .loading-overlay {
+            position:absolute; inset:0; background:rgba(15,23,42,.9);
+            border-radius:12px; display:flex; align-items:center; justify-content:center;
+            z-index:10; color:var(--blue); font-size:1.1rem; font-weight:600; animation:pulse 1.5s infinite;
+        }
+        @keyframes fadeDown { from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes fadeUp   { from{opacity:0;transform:translateY(20px)}  to{opacity:1;transform:translateY(0)} }
+        @keyframes pulse    { 0%,100%{opacity:.6} 50%{opacity:1} }
+        @media(max-width:900px){ .wrap{grid-template-columns:1fr} }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Painel de Controle Toolkit</h1>
+    <p class="subtitle">Saldo diário de equipamentos por técnico — dados ao vivo do Supabase</p>
+</header>
+<div class="wrap">
+    <aside class="glass sidebar">
+        <div>
+            <label for="regionalFilter">Regional</label>
+            <select id="regionalFilter">
+                <option value="ALL">Todas</option>
+                <option value="SP">São Paulo (SP)</option>
+                <option value="RJ">Rio de Janeiro (RJ)</option>
+            </select>
+        </div>
+        <div>
+            <label for="sistemaFilter">Sistema</label>
+            <select id="sistemaFilter">
+                <option value="ALL">Todos (ANIEL + WMS)</option>
+                <option value="ANIEL">Somente ANIEL</option>
+                <option value="WMS">Somente WMS</option>
+            </select>
+        </div>
+        <div>
+            <label for="supervisorFilter">Supervisor</label>
+            <select id="supervisorFilter" disabled><option value="ALL">Carregando...</option></select>
+        </div>
+        <div>
+            <label for="tecnicoFilter">Técnico</label>
+            <select id="tecnicoFilter" disabled><option value="ALL">Todos os Técnicos</option></select>
+        </div>
+        <div>
+            <label for="materialFilter">Equipamento</label>
+            <select id="materialFilter" disabled><option value="ALL">Todos os Itens</option></select>
+        </div>
+
+        <div>
+            <label>Legenda</label>
+            <div class="legend-box">
+                <div class="leg"><div class="dot" style="background:var(--blue)"></div> ANIEL</div>
+                <div class="leg"><div class="dot" style="background:var(--green)"></div> WMS</div>
+            </div>
+        </div>
+
+        <div class="badge"><strong>[ AO VIVO · SUPABASE ]</strong><br>consolidado_aniel + consolidado_wms</div>
+    </aside>
+
+    <main class="glass">
+        <div class="chart-box">
+            <div id="loading" class="loading-overlay">Carregando dados...</div>
+            <canvas id="chart"></canvas>
+        </div>
+    </main>
+</div>
+
+<script>
+const SUPA_URL = 'https://tedclftyfdjktxeqjpcf.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlZGNsZnR5ZmRqa3R4ZXFqcGNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NTk1MjMsImV4cCI6MjA5MDAzNTUyM30.wvGWKq8sfgitGfD2mIJBZnCAg-wOHO2VdoBgqyofY5k';
+const db = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+
+const elRegional  = document.getElementById('regionalFilter');
+const elSistema   = document.getElementById('sistemaFilter');
+const elSupervisor= document.getElementById('supervisorFilter');
+const elTecnico   = document.getElementById('tecnicoFilter');
+const elMaterial  = document.getElementById('materialFilter');
+const loadingDiv  = document.getElementById('loading');
+const ctx         = document.getElementById('chart').getContext('2d');
+
+let chartInstance = null;
+// Dados separados por origem
+let dataAniel = [];
+let dataWms   = [];
+
+Chart.defaults.color = '#94a3b8';
+Chart.defaults.font.family = "'Inter', sans-serif";
+
+// ─── Carrega os dois datasets em paralelo ────────────────────────────────────
+async function init() {
+    try {
+        const [resAniel, resWms] = await Promise.all([
+            db.from('consolidado_aniel').select('data,regional,supervisor,tecnico,cod__material,descricao,saldo'),
+            db.from('consolidado_wms').select('data,regional,supervisor,tecnico,cod__material,descricao,saldo')
+        ]);
+
+        if (resAniel.error) throw resAniel.error;
+        if (resWms.error)   throw resWms.error;
+
+        dataAniel = resAniel.data || [];
+        dataWms   = resWms.data   || [];
+
+        populateFilters();
+        bindEvents();
+        loadingDiv.style.display = 'none';
+        render();
+    } catch (err) {
+        console.error(err);
+        loadingDiv.textContent = `Erro: ${err.message}`;
+        loadingDiv.style.color = '#ef4444';
+        loadingDiv.style.animation = 'none';
+    }
+}
+
+// ─── Popula filtros estáticos (supervisor + materiais) usando todos os dados ─
+function populateFilters() {
+    const supervisores = new Set();
+    const materiais    = new Map();
+
+    [...dataAniel, ...dataWms].forEach(r => {
+        if (r.supervisor && r.supervisor !== 'null') supervisores.add(r.supervisor);
+        if (r.cod__material && r.descricao) materiais.set(r.cod__material, r.descricao);
+    });
+
+    elSupervisor.innerHTML = '<option value="ALL">Todos os Supervisores</option>';
+    [...supervisores].sort().forEach(s => elSupervisor.appendChild(new Option(s, s)));
+
+    elMaterial.innerHTML = '<option value="ALL">Todos os Itens</option>';
+    [...materiais.entries()].sort((a,b) => a[1].localeCompare(b[1]))
+        .forEach(([code, desc]) => elMaterial.appendChild(new Option(desc, code)));
+
+    elSupervisor.disabled = false;
+    elMaterial.disabled   = false;
+
+    refreshTecnicos();
+}
+
+// ─── Atualiza técnicos conforme sistema/regional/supervisor escolhidos ────────
+function refreshTecnicos() {
+    const sistem  = elSistema.value;
+    const regional= elRegional.value;
+    const sup     = elSupervisor.value;
+
+    // Escolhe a fonte certa ou todas
+    const sources = sistem === 'ANIEL' ? dataAniel : sistem === 'WMS' ? dataWms : [...dataAniel, ...dataWms];
+    const tecnicos = new Set();
+
+    sources.forEach(r => {
+        if (!r.tecnico || r.tecnico === 'null') return;
+        if (regional !== 'ALL' && r.regional !== regional) return;
+        if (sup !== 'ALL' && r.supervisor !== sup) return;
+        tecnicos.add(r.tecnico);
+    });
+
+    const prev = elTecnico.value;
+    elTecnico.innerHTML = '<option value="ALL">Todos os Técnicos</option>';
+    [...tecnicos].sort().forEach(t => elTecnico.appendChild(new Option(t, t)));
+    elTecnico.value = tecnicos.has(prev) ? prev : 'ALL';
+    elTecnico.disabled = false;
+}
+
+function bindEvents() {
+    // Mudança de sistema, regional ou supervisor → refresca técnicos E redesenha
+    [elSistema, elRegional, elSupervisor].forEach(el =>
+        el.addEventListener('change', () => { refreshTecnicos(); render(); })
+    );
+    // Mudança de técnico ou material → só redesenha
+    [elTecnico, elMaterial].forEach(el => el.addEventListener('change', render));
+}
+
+// ─── Filtra um dataset e agrega saldo por data ───────────────────────────────
+function aggregate(rows, regional, sup, tec, mat) {
+    const byDate = new Map();
+
+    rows.forEach(r => {
+        if (regional !== 'ALL' && r.regional !== regional) return;
+        if (sup      !== 'ALL' && r.supervisor !== sup)    return;
+        if (tec      !== 'ALL' && r.tecnico !== tec)       return;
+        if (mat      !== 'ALL' && r.cod__material !== mat) return;
+
+        const d = r.data; if (!d) return;
+        const v = parseFloat(r.saldo || 0);
+        byDate.set(d, (byDate.get(d) || 0) + v);
+    });
+
+    return byDate; // Map<date, totalSaldo>
+}
+
+// ─── Renderiza ───────────────────────────────────────────────────────────────
+function render() {
+    const sistem   = elSistema.value;
+    const regional = elRegional.value;
+    const sup      = elSupervisor.value;
+    const tec      = elTecnico.value;
+    const mat      = elMaterial.value;
+
+    const anielByDate = (sistem === 'WMS')   ? new Map() : aggregate(dataAniel, regional, sup, tec, mat);
+    const wmsByDate   = (sistem === 'ANIEL') ? new Map() : aggregate(dataWms,   regional, sup, tec, mat);
+
+    const allDates  = new Set([...anielByDate.keys(), ...wmsByDate.keys()]);
+    const sorted    = [...allDates].sort();
+
+    const labels = [], ptAniel = [], ptWms = [];
+
+    sorted.forEach(d => {
+        const sp = d.split('-');
+        labels.push(sp.length === 3 ? `${sp[2]}/${sp[1]}` : d);
+        ptAniel.push(anielByDate.has(d) ? anielByDate.get(d).toFixed(2) : null);
+        ptWms.push  (wmsByDate.has(d)   ? wmsByDate.get(d).toFixed(2)   : null);
+    });
+
+    drawChart(labels, ptAniel, ptWms, tec, sup);
+}
+
+function drawChart(labels, ptAniel, ptWms, tec, sup) {
+    if (chartInstance) chartInstance.destroy();
+
+    let yLabel = 'Saldo Total por Data';
+    if (tec !== 'ALL')  yLabel = `Saldo de: ${tec}`;
+    else if (sup !== 'ALL') yLabel = `Saldo Total da Equipe de: ${sup}`;
+
+    const datasets = [];
+
+    if (ptAniel.some(v => v !== null)) {
+        datasets.push({
+            label: 'Saldo ANIEL',
+            data: ptAniel,
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59,130,246,.1)',
+            borderWidth: 3,
+            pointBackgroundColor: '#3b82f6',
+            pointBorderColor: '#fff',
+            pointRadius: 4, pointHoverRadius: 7,
+            spanGaps: true, fill: false, tension: 0.4
+        });
+    }
+
+    if (ptWms.some(v => v !== null)) {
+        datasets.push({
+            label: 'Saldo WMS',
+            data: ptWms,
+            borderColor: '#10b981',
+            backgroundColor: 'rgba(16,185,129,.1)',
+            borderWidth: 3,
+            pointBackgroundColor: '#10b981',
+            pointBorderColor: '#fff',
+            pointRadius: 4, pointHoverRadius: 7,
+            spanGaps: true, fill: false, tension: 0.4
+        });
+    }
+
+    if (datasets.length === 0) {
+        // nenhum dado → gráfico vazio com mensagem
+        datasets.push({ label: 'Sem dados para o filtro selecionado', data: [], borderColor: 'transparent' });
+    }
+
+    chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: { labels, datasets },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: { color:'#f8fafc', usePointStyle:true, padding:20, font:{ size:13 } }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(15,23,42,.9)',
+                    titleColor: '#fff', bodyColor: '#cbd5e1',
+                    borderColor: 'rgba(255,255,255,.1)', borderWidth:1, padding:12
+                }
+            },
+            scales: {
+                x: { grid: { color: 'rgba(255,255,255,.05)' } },
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(255,255,255,.05)' },
+                    title: { display:true, text: yLabel, color:'#94a3b8' }
+                }
+            }
+        }
+    });
+}
+
+window.onload = init;
+</script>
+</body>
+</html>

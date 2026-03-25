@@ -1,0 +1,53 @@
+DROP TABLE IF EXISTS "historico_aniel_sp";
+CREATE TABLE "historico_aniel_sp" (
+  id SERIAL PRIMARY KEY,
+  "data" DATE,
+  "cod__supervisor" TEXT,
+  "supervisor" TEXT,
+  "equipe" TEXT,
+  "n__f_r_e_" TEXT,
+  "nome_da_equipe" TEXT,
+  "conta_cliente" TEXT,
+  "cod__material" TEXT,
+  "desc__material" TEXT,
+  "descricao_auxiliar" TEXT,
+  "cod__cpl__aux" TEXT,
+  "unidade" TEXT,
+  "cod__compl_" TEXT,
+  "grupo_de_material" TEXT,
+  "recebido" TEXT,
+  "devolucao" TEXT,
+  "aplicado" TEXT,
+  "removido" TEXT,
+  "saldo" TEXT,
+  "valor_unit_" TEXT,
+  "total_r_" TEXT,
+  "arquivo_origem" TEXT
+);
+
+DROP TABLE IF EXISTS "historico_aniel_rj";
+CREATE TABLE "historico_aniel_rj" (
+  id SERIAL PRIMARY KEY,
+  "data" DATE,
+  "cod__supervisor" TEXT,
+  "supervisor" TEXT,
+  "equipe" TEXT,
+  "n__f_r_e_" TEXT,
+  "nome_da_equipe" TEXT,
+  "conta_cliente" TEXT,
+  "cod__material" TEXT,
+  "desc__material" TEXT,
+  "descricao_auxiliar" TEXT,
+  "cod__cpl__aux" TEXT,
+  "unidade" TEXT,
+  "cod__compl_" TEXT,
+  "grupo_de_material" TEXT,
+  "recebido" TEXT,
+  "devolucao" TEXT,
+  "aplicado" TEXT,
+  "removido" TEXT,
+  "saldo" TEXT,
+  "valor_unit_" TEXT,
+  "total_r_" TEXT,
+  "arquivo_origem" TEXT
+);
