@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RELATÓRIO ANALÍTICO - TOOLKIT IHS</title>
+    <link rel="icon" type="image/jpeg" href="logo.jpeg">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #0f172a;
+            --muted: #64748b;
+            --accent: #0f172a;
+            --border: #e2e8f0;
+            --hover: #f1f5f9;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg); color: var(--text); padding: 1rem 2rem; }
+
+        header {
+            width: 100%; max-width: 1400px; margin: 0 auto 2rem;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 1rem 0; border-bottom: 2px solid var(--accent);
+        }
+        .header-left { display: flex; align-items: center; gap: 1.5rem; }
+        header img { height: 50px; border-radius: 4px; }
+        header h1 { font-size: 1.2rem; font-weight: 800; text-transform: uppercase; }
+
+        .btn-back {
+            display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.6rem 1rem; background: white; border: 1px solid var(--border);
+            border-radius: 8px; color: var(--text); text-decoration: none;
+            font-size: 0.8rem; font-weight: 700; transition: all 0.2s;
+        }
+        .btn-back:hover { background: var(--hover); border-color: var(--accent); }
+
+        .filters {
+            width: 100%; max-width: 1400px; margin: 0 auto 1.5rem;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem; background: white; padding: 1.5rem; border-radius: 8px;
+            border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .fg label { display: block; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; }
+        select {
+            width: 100%; padding: 0.6rem; border-radius: 4px; border: 1px solid var(--border);
+            font-size: 0.85rem; outline: none; cursor: pointer;
+        }
+
+        .table-container {
+            width: 100%; max-width: 1400px; margin: 0 auto;
+            background: white; border-radius: 8px; border: 1px solid var(--border);
+            overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; table-layout: fixed; }
+        th { background: #f8fafc; padding: 1rem; text-align: left; font-weight: 700; color: var(--muted); text-transform: uppercase; font-size: 0.65rem; border-bottom: 2px solid var(--border); }
+        td { padding: 0.8rem 1rem; border-bottom: 1px solid var(--border); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        
+        /* Hierarquia */
+        .toggle-btn { cursor: pointer; display: inline-flex; align-items: center; width: 20px; font-size: 0.7rem; color: var(--muted); }
+        .row-hidden { display: none; }
+        
+        tr.sup-row { background: #f1f5f9; font-weight: 700; cursor: pointer; }
+        tr.tec-row { background: #ffffff; font-weight: 600; cursor: pointer; }
+        tr.mat-row { color: var(--muted); font-size: 0.8rem; }
+        
+        .indent-1 { padding-left: 2rem !important; }
+        .indent-2 { padding-left: 4rem !important; }
+
+        .val { text-align: right; font-weight: 700; width: 150px; }
+        .unit { font-size: 0.7rem; color: var(--muted); font-weight: 400; margin-left: 4px; }
+        .empty { padding: 3rem; text-align: center; color: var(--muted); }
+
+        #loading {
+            position: fixed; inset: 0; background: rgba(255,255,255,0.8);
+            display: flex; align-items: center; justify-content: center; z-index: 100;
+            flex-direction: column; gap: 1rem;
+        }
+        .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .search-box { position: relative; }
+        .search-box input { width: 100%; padding: 0.6rem; border-radius: 4px; border: 1px solid var(--border); font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+
+<div id="loading">
+    <div class="spinner"></div>
+    <p>Carregando Relatório Analítico...</p>
+</div>
+
+<header>
+    <div class="header-left">
+        <img src="logo.jpeg" alt="FFA logo">
+        <h1>Relatório Analítico - Matrix</h1>
+    </div>
+    <a href="dashboard.html" class="btn-back">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        Voltar ao Dashboard
+    </a>
+</header>
+
+<div class="filters">
+    <div class="fg">
+        <label>Regional</label>
+        <select id="regFilter">
+            <option value="SP">São Paulo (SP)</option>
+            <option value="RJ">Rio de Janeiro (RJ)</option>
+        </select>
+    </div>
+    <div class="fg">
+        <label>Sistemas</label>
+        <select id="sysFilter">
+            <option value="BOTH">Todos os Sistemas</option>
+            <option value="ANIEL">Somente ANIEL</option>
+            <option value="WMS">Somente WMS</option>
+        </select>
+    </div>
+    <div class="fg">
+        <label>Filtrar Material</label>
+        <select id="matFilter">
+            <option value="ALL">Todos os Materiais</option>
+        </select>
+    </div>
+    <div class="fg">
+        <label>Supervisor</label>
+        <select id="supFilter">
+            <option value="ALL">Todos os Supervisores</option>
+        </select>
+    </div>
+    <div class="fg">
+        <label>Busca Rápida (Técnico)</label>
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Nome do técnico...">
+        </div>
+    </div>
+</div>
+
+<div class="table-container">
+    <table id="matrixTable">
+        <thead>
+            <tr>
+                <th style="width: 40%;">Hierarquia</th>
+                <th id="colAniel" class="val">ANIEL</th>
+                <th id="colWms" class="val">WMS</th>
+                <th id="colTotal" class="val">TOTAL</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+            <!-- Data will be injected here -->
+        </tbody>
+    </table>
+</div>
+
+<script>
+const SUPA_URL = 'https://tedclftyfdjktxeqjpcf.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlZGNsZnR5ZmRqa3R4ZXFqcGNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NTk1MjMsImV4cCI6MjA5MDAzNTUyM30.wvGWKq8sfgitGfD2mIJBZnCAg-wOHO2VdoBgqyofY5k';
+const db = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+
+let rawAniel = [];
+let rawWms = [];
+
+function getUnit(mat) {
+    if (!mat) return 'un';
+    const m = mat.toUpperCase();
+    if (m.includes('CABO') || m.includes('FIO') || m.includes('DROP') || m.includes('CORDAO')) return 'm';
+    return 'un';
+}
+
+function normAniel(r) {
+    return {
+        supervisor: (r.supervisor || r.cod__supervisor || 'SEM SUPERVISOR').trim().toUpperCase(),
+        tecnico: (r.nome_da_equipe || r.tecnico || 'SEM TÉCNICO').trim().toUpperCase(),
+        codMat: (r.cod__material || '').trim(),
+        descMat: (r.desc__material || r.descricao || '').trim().toUpperCase(),
+        consumo: parseFloat(r.aplicado || 0)
+    };
+}
+
+function normWms(r) {
+    return {
+        supervisor: (r.supervisor || 'SEM SUPERVISOR').trim().toUpperCase(),
+        tecnico: (r.tecnico || 'SEM TÉCNICO').trim().toUpperCase(),
+        codMat: (r.codigo || r.part_number || '').trim(),
+        descMat: (r.nome || '').trim().toUpperCase(),
+        consumo: parseFloat(r.quantidade || 0)
+    };
+}
+
+async function fetchAll(table, norm) {
+    let all = [], from = 0;
+    while (true) {
+        const { data, error } = await db.from(table).select('*').range(from, from + 999);
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+        all = all.concat(data.map(norm));
+        if (data.length < 1000) break;
+        from += 1000;
+    }
+    return all;
+}
+
+async function loadData() {
+    document.getElementById('loading').style.display = 'flex';
+    const reg = document.getElementById('regFilter').value;
+    try {
+        rawAniel = await fetchAll('historico_aniel_' + reg.toLowerCase(), normAniel);
+        rawWms = await fetchAll('historico_wms_' + reg.toLowerCase(), normWms);
+        
+        populateSelectors();
+        renderTable();
+    } catch (e) {
+        alert('Erro ao carregar dados: ' + e.message);
+    } finally {
+        document.getElementById('loading').style.display = 'none';
+    }
+}
+
+function populateSelectors() {
+    const sups = new Set([...rawAniel, ...rawWms].map(r => r.supervisor));
+    const supSel = document.getElementById('supFilter');
+    supSel.innerHTML = '<option value="ALL">Todos os Supervisores</option>';
+    [...sups].sort().forEach(s => supSel.appendChild(new Option(s, s)));
+
+    const mats = new Map();
+    [...rawAniel, ...rawWms].forEach(r => {
+        if (r.codMat) mats.set(r.codMat, r.descMat || r.codMat);
+    });
+    const matSel = document.getElementById('matFilter');
+    matSel.innerHTML = '<option value="ALL">Todos os Materiais</option>';
+    [...mats.entries()].sort((a,b) => a[1].localeCompare(b[1])).forEach(([code, desc]) => {
+        matSel.appendChild(new Option(desc, code));
+    });
+}
+
+function toggleRow(id) {
+    const rows = document.querySelectorAll(`[data-parent="${id}"]`);
+    const btn = document.querySelector(`[data-id="${id}"] .toggle-btn`);
+    const isHidden = rows[0]?.classList.contains('row-hidden');
+    
+    rows.forEach(r => {
+        if (isHidden) {
+            r.classList.remove('row-hidden');
+        } else {
+            r.classList.add('row-hidden');
+            // Fechar filhos recursivamente
+            const childId = r.getAttribute('data-id');
+            if (childId) {
+                const childRows = document.querySelectorAll(`[data-parent="${childId}"]`);
+                childRows.forEach(cr => cr.classList.add('row-hidden'));
+                const childBtn = r.querySelector('.toggle-btn');
+                if (childBtn) childBtn.innerHTML = '▶';
+            }
+        }
+    });
+    if (btn) btn.innerHTML = isHidden ? '▼' : '▶';
+}
+
+function renderTable() {
+    const supFilter = document.getElementById('supFilter').value;
+    const matFilter = document.getElementById('matFilter').value;
+    const sysFilter = document.getElementById('sysFilter').value;
+    const search = document.getElementById('searchInput').value.toLowerCase();
+
+    // Colunas Visíveis
+    document.getElementById('colAniel').style.display = sysFilter === 'WMS' ? 'none' : 'table-cell';
+    document.getElementById('colWms').style.display   = sysFilter === 'ANIEL' ? 'none' : 'table-cell';
+    document.getElementById('colTotal').style.display = sysFilter === 'BOTH' ? 'table-cell' : 'none';
+
+    // Agrupar
+    const matrix = {}; 
+
+    const process = (rows, type) => {
+        rows.forEach(r => {
+            if (supFilter !== 'ALL' && r.supervisor !== supFilter) return;
+            if (matFilter !== 'ALL' && r.codMat !== matFilter) return;
+            if (search && !r.tecnico.toLowerCase().includes(search)) return;
+
+            if (!matrix[r.supervisor]) matrix[r.supervisor] = {};
+            if (!matrix[r.supervisor][r.tecnico]) matrix[r.supervisor][r.tecnico] = {};
+            const key = r.descMat || r.codMat;
+            if (!matrix[r.supervisor][r.tecnico][key]) {
+                matrix[r.supervisor][r.tecnico][key] = { aniel: 0, wms: 0, unit: getUnit(key) };
+            }
+            matrix[r.supervisor][r.tecnico][key][type] += r.consumo;
+        });
+    };
+
+    if (sysFilter !== 'WMS') process(rawAniel, 'aniel');
+    if (sysFilter !== 'ANIEL') process(rawWms, 'wms');
+
+    const body = document.getElementById('tableBody');
+    body.innerHTML = '';
+
+    const sortedSups = Object.keys(matrix).sort();
+    if (sortedSups.length === 0) {
+        body.innerHTML = '<tr><td colspan="4" class="empty">Nenhum dado encontrado.</td></tr>';
+        return;
+    }
+
+    sortedSups.forEach((sup, sIdx) => {
+        const supId = `sup-${sIdx}`;
+        let supAniel = 0, supWms = 0;
+        const tecs = matrix[sup];
+        let tecHtml = '';
+
+        Object.keys(tecs).sort().forEach((tec, tIdx) => {
+            const tecId = `tec-${sIdx}-${tIdx}`;
+            let tecAniel = 0, tecWms = 0;
+            const mats = tecs[tec];
+            let matHtml = '';
+
+            Object.keys(mats).sort().forEach(mat => {
+                const vals = mats[mat];
+                tecAniel += vals.aniel;
+                tecWms += vals.wms;
+                matHtml += `
+                    <tr class="mat-row row-hidden" data-parent="${tecId}">
+                        <td class="indent-2">${mat}</td>
+                        <td class="val" style="${sysFilter === 'WMS' ? 'display:none' : ''}">${vals.aniel.toLocaleString()}<span class="unit">${vals.unit}</span></td>
+                        <td class="val" style="${sysFilter === 'ANIEL' ? 'display:none' : ''}">${vals.wms.toLocaleString()}<span class="unit">${vals.unit}</span></td>
+                        <td class="val" style="${sysFilter === 'BOTH' ? '' : 'display:none'}">${(vals.aniel + vals.wms).toLocaleString()}<span class="unit">${vals.unit}</span></td>
+                    </tr>
+                `;
+            });
+
+            supAniel += tecAniel;
+            supWms += tecWms;
+            tecHtml += `
+                <tr class="tec-row row-hidden" data-id="${tecId}" data-parent="${supId}" onclick="toggleRow('${tecId}')">
+                    <td class="indent-1"><span class="toggle-btn">▶</span> ${tec}</td>
+                    <td class="val" style="${sysFilter === 'WMS' ? 'display:none' : ''}">${tecAniel.toLocaleString()}</td>
+                    <td class="val" style="${sysFilter === 'ANIEL' ? 'display:none' : ''}">${tecWms.toLocaleString()}</td>
+                    <td class="val" style="${sysFilter === 'BOTH' ? '' : 'display:none'}">${(tecAniel + tecWms).toLocaleString()}</td>
+                </tr>
+            ` + matHtml;
+        });
+
+        body.innerHTML += `
+            <tr class="sup-row" data-id="${supId}" onclick="toggleRow('${supId}')">
+                <td><span class="toggle-btn">▶</span> ${sup}</td>
+                <td class="val" style="${sysFilter === 'WMS' ? 'display:none' : ''}">${supAniel.toLocaleString()}</td>
+                <td class="val" style="${sysFilter === 'ANIEL' ? 'display:none' : ''}">${supWms.toLocaleString()}</td>
+                <td class="val" style="${sysFilter === 'BOTH' ? '' : 'display:none'}">${(supAniel + supWms).toLocaleString()}</td>
+            </tr>
+        ` + tecHtml;
+    });
+}
+
+document.getElementById('regFilter').addEventListener('change', loadData);
+document.getElementById('sysFilter').addEventListener('change', renderTable);
+document.getElementById('supFilter').addEventListener('change', renderTable);
+document.getElementById('matFilter').addEventListener('change', renderTable);
+document.getElementById('searchInput').addEventListener('input', renderTable);
+
+window.onload = loadData;
+</script>
+</body>
+</html>

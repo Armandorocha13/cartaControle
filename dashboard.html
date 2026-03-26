@@ -3,122 +3,240 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Toolkit Control Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <title>CARTA DE CONTROLE - TOOLKIT IHS</title>
+    <link rel="icon" type="image/jpeg" href="logo.jpeg">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
-            --bg: #0f172a;
-            --card: rgba(30, 41, 59, 0.7);
-            --text: #f8fafc;
-            --muted: #94a3b8;
-            --blue: #3b82f6;
-            --green: #10b981;
-            --red: #ef4444;
-            --border: rgba(255,255,255,0.1);
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #0f172a;
+            --muted: #64748b;
+            --aniel: #dc2626; /* Vermelho */
+            --wms: #4b5320;   /* Verde Militar */
+            --teto: #0f172a;  /* Preto/Neutro */
+            --ucl: #94a3b8;   /* Cinza */
+            --border: #e2e8f0;
+            --accent: #0f172a;
         }
-        * { box-sizing:border-box; margin:0; padding:0; font-family:'Inter',sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
         body {
             background: var(--bg);
-            background-image: radial-gradient(circle at top right, #1e293b 0%, #0f172a 100%);
-            color: var(--text); min-height:100vh;
-            display:flex; flex-direction:column; align-items:center; padding:2rem;
+            color: var(--text);
+            min-height: 100vh;
+            display: flex; flex-direction: column; align-items: center;
+            padding: 1rem 2rem;
         }
-        header { width:100%; max-width:1300px; text-align:center; margin-bottom:2rem; animation:fadeDown .8s ease; }
-        h1 {
-            font-size:2.4rem; font-weight:700;
-            background: -webkit-linear-gradient(45deg, var(--blue), var(--green));
-            -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:.5rem;
+
+        /* ─── HEADER ──────────────────────────────────────────── */
+        header {
+            width: 100%; max-width: 1400px;
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 2rem;
+            padding: 1rem 0;
+            border-bottom: 2px solid var(--accent);
+            animation: fadeDown .6s ease;
         }
-        p.subtitle { color:var(--muted); font-size:1rem; }
-        .wrap { width:100%; max-width:1300px; display:grid; grid-template-columns:320px 1fr; gap:1.5rem; animation:fadeUp 1s ease; }
+        .header-left { display: flex; align-items: center; gap: 1.5rem; }
+        header img { height: 60px; border-radius: 4px; }
+        header h1 {
+            font-size: 1.4rem; font-weight: 800; letter-spacing: 0.05em;
+            color: var(--accent); text-transform: uppercase;
+        }
+        header p { color: var(--muted); font-size: .75rem; font-weight: 500; }
+
+        /* ─── REGIONAL TABS ───────────────────────────────────── */
+        .reg-bar {
+            width: 100%; max-width: 1400px;
+            display: flex; gap: .5rem; margin-bottom: 1.5rem;
+        }
+        .reg-tab {
+            padding: .5rem 1.5rem; border-radius: 4px; font-size: .75rem; font-weight: 700;
+            cursor: pointer; border: 1px solid var(--border);
+            background: var(--card); color: var(--muted);
+            transition: all .2s; user-select: none;
+            text-transform: uppercase;
+        }
+        .reg-tab.active {
+            background: var(--accent); color: #fff;
+            border-color: var(--accent);
+        }
+
+        /* ─── LAYOUT ──────────────────────────────────────────── */
+        .wrap {
+            width: 100%; max-width: 1400px;
+            display: grid; grid-template-columns: 280px 1fr;
+            gap: 1.5rem; animation: fadeUp .7s ease;
+        }
         .glass {
-            background:var(--card); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
-            border:1px solid var(--border); border-radius:16px; padding:1.5rem; box-shadow:0 10px 30px rgba(0,0,0,.5);
+            background: var(--card);
+            border: 1px solid var(--border); border-radius: 8px;
+            padding: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
         }
-        .sidebar { display:flex; flex-direction:column; gap:1.2rem; overflow-y:auto; max-height:85vh; }
-        .sidebar::-webkit-scrollbar { width:5px; }
-        .sidebar::-webkit-scrollbar-thumb { background:var(--muted); border-radius:3px; }
-        label { display:block; margin-bottom:.3rem; font-size:.8rem; font-weight:600; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); }
+
+        /* ─── SIDEBAR ─────────────────────────────────────────── */
+        .sidebar { display: flex; flex-direction: column; gap: 1.2rem; }
+        .fg label {
+            display: block; font-size: .65rem; font-weight: 800;
+            text-transform: uppercase; letter-spacing: .1em;
+            color: var(--muted); margin-bottom: .4rem;
+        }
         select {
-            width:100%; padding:.65rem 1rem; border-radius:8px;
-            background:rgba(15,23,42,.85); border:1px solid var(--border);
-            color:var(--text); font-size:.9rem; outline:none; cursor:pointer; transition:border-color .2s;
+            width: 100%; padding: .6rem .8rem; border-radius: 4px;
+            background: #fff; border: 1px solid var(--border);
+            color: var(--text); font-size: .85rem; outline: none;
+            cursor: pointer; transition: all .2s;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='3'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right .8rem center;
         }
-        select:focus { border-color:var(--blue); }
-        .legend-box { display:flex; gap:1rem; flex-wrap:wrap; margin-top:.5rem; }
-        .leg { display:flex; align-items:center; gap:.4rem; font-size:.8rem; }
-        .dot { width:12px; height:12px; border-radius:50%; }
-        .badge {
-            margin-top:auto; padding:.75rem; font-size:.75rem; color:var(--green);
-            text-align:center; background:rgba(16,185,129,.1); border-radius:8px;
+        select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(15,23,42,0.05); }
+
+        /* ─── KPI CARDS ───────────────────────────────────────── */
+        .kpi-strip { display: flex; gap: 1rem; margin-bottom: 1.2rem; }
+        .kpi {
+            flex: 1; background: var(--card); border: 1px solid var(--border);
+            border-radius: 8px; padding: 1rem;
+            border-left: 4px solid var(--accent);
         }
-        .chart-box { position:relative; height:500px; }
-        .loading-overlay {
-            position:absolute; inset:0; background:rgba(15,23,42,.9);
-            border-radius:12px; display:flex; align-items:center; justify-content:center;
-            z-index:10; color:var(--blue); font-size:1.1rem; font-weight:600; animation:pulse 1.5s infinite;
+        .kpi-label { font-size: .65rem; color: var(--muted); font-weight: 700; text-transform: uppercase; }
+        .kpi-value { font-size: 1.8rem; font-weight: 800; color: var(--text); margin-top: .2rem; }
+        .kpi-note  { font-size: .7rem; color: var(--muted); margin-top: .2rem; }
+
+        /* ─── CHART ───────────────────────────────────────────── */
+        .chart-section { display: flex; flex-direction: column; }
+        .chart-wrap { position: relative; height: 480px; }
+        #loading {
+            position: absolute; inset: 0; border-radius: 8px;
+            background: rgba(255,255,255,.9); display: flex;
+            align-items: center; justify-content: center;
+            flex-direction: column; gap: .7rem; z-index: 10;
         }
-        @keyframes fadeDown { from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes fadeUp   { from{opacity:0;transform:translateY(20px)}  to{opacity:1;transform:translateY(0)} }
-        @keyframes pulse    { 0%,100%{opacity:.6} 50%{opacity:1} }
-        @media(max-width:900px){ .wrap{grid-template-columns:1fr} }
+        .spinner {
+            width: 30px; height: 30px; border: 3px solid #e2e8f0;
+            border-top-color: var(--accent); border-radius: 50%;
+            animation: spin .75s linear infinite;
+        }
+
+        /* ─── LEGEND ─────────────────────────────────────────── */
+        .mini-legend { display: flex; flex-direction: column; gap: .6rem; margin-top: 1rem; }
+        .mitem {
+            display: flex; align-items: center; gap: .6rem; font-size: .75rem;
+            color: var(--text); font-weight: 500;
+        }
+        .mdot { width: 30px; height: 3px; border-radius: 1px; }
+
+        @keyframes fadeDown { from{opacity:0;transform:translateY(-10px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes fadeUp   { from{opacity:0;transform:translateY(10px)}  to{opacity:1;transform:translateY(0)} }
+        @keyframes spin     { to{transform:rotate(360deg)} }
+
+        /* ─── BOTÃO ANALÍTICO ────────────────────────── */
+        .header-right { display: flex; align-items: center; }
+        .btn-analitico {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.8rem 1.2rem;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 700;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .btn-analitico:hover {
+            border-color: var(--accent);
+            background: #f8fafc;
+            transform: translateY(-1px);
+        }
+        .btn-analitico svg { color: var(--accent); }
     </style>
 </head>
 <body>
+
 <header>
-    <h1>Painel de Controle Toolkit</h1>
-    <p class="subtitle">Saldo diário de equipamentos por técnico — dados ao vivo do Supabase</p>
+    <div class="header-left">
+        <img src="logo.jpeg" alt="Logo FFA">
+        <div>
+            <h1>CARTA DE CONTROLE - TOOLKIT IHS</h1>
+            <p>Monitoramento Estatístico de Consumo Diário por Regional</p>
+        </div>
+    </div>
+    <div class="header-right">
+        <a href="relatorio.html" class="btn-analitico">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
+            Ir para Relatório Analítico
+        </a>
+    </div>
 </header>
+
+<div class="reg-bar">
+    <div class="reg-tab active" data-reg="SP">São Paulo (SP)</div>
+    <div class="reg-tab" data-reg="RJ">Rio de Janeiro (RJ)</div>
+</div>
+
 <div class="wrap">
+    <!-- SIDEBAR -->
     <aside class="glass sidebar">
-        <div>
-            <label for="regionalFilter">Regional</label>
-            <select id="regionalFilter">
-                <option value="ALL">Todas</option>
-                <option value="SP">São Paulo (SP)</option>
-                <option value="RJ">Rio de Janeiro (RJ)</option>
-            </select>
+        <div class="fg">
+            <label>Supervisor</label>
+            <select id="supFilter"><option value="ALL">Todos os Supervisores</option></select>
         </div>
-        <div>
-            <label for="sistemaFilter">Sistema</label>
-            <select id="sistemaFilter">
-                <option value="ALL">Todos (ANIEL + WMS)</option>
-                <option value="ANIEL">Somente ANIEL</option>
-                <option value="WMS">Somente WMS</option>
-            </select>
+        <div class="fg">
+            <label>Técnico</label>
+            <select id="tecFilter" disabled><option value="ALL">Todos os Técnicos</option></select>
         </div>
-        <div>
-            <label for="supervisorFilter">Supervisor</label>
-            <select id="supervisorFilter" disabled><option value="ALL">Carregando...</option></select>
-        </div>
-        <div>
-            <label for="tecnicoFilter">Técnico</label>
-            <select id="tecnicoFilter" disabled><option value="ALL">Todos os Técnicos</option></select>
-        </div>
-        <div>
-            <label for="materialFilter">Equipamento</label>
-            <select id="materialFilter" disabled><option value="ALL">Todos os Itens</option></select>
+        <div class="fg">
+            <label>Material</label>
+            <select id="matFilter"><option value="ALL">Todos os Materiais</option></select>
         </div>
 
-        <div>
-            <label>Legenda</label>
-            <div class="legend-box">
-                <div class="leg"><div class="dot" style="background:var(--blue)"></div> ANIEL</div>
-                <div class="leg"><div class="dot" style="background:var(--green)"></div> WMS</div>
+        <div style="margin-top:1rem; padding-top:1.5rem; border-top:1px solid var(--border)">
+            <label style="display:block; font-size:.65rem; font-weight:800; color:var(--muted); text-transform:uppercase; margin-bottom:.8rem">Legenda do Gráfico</label>
+            <div class="mini-legend">
+                <div class="mitem"><div class="mdot" style="background:var(--aniel)"></div> ANIEL (Vermelho)</div>
+                <div class="mitem"><div class="mdot" style="background:var(--wms)"></div> WMS (Verde Militar)</div>
+                <div class="mitem"><div class="mdot" style="background:var(--teto); height:2px; border-bottom:2px dashed var(--teto)"></div> Teto (100% Média)</div>
+                <div class="mitem"><div class="mdot" style="background:var(--ucl); height:1px; border-bottom:1px dashed var(--ucl)"></div> Limites ±3σ</div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- CHART + KPIs -->
+    <div class="chart-section">
+        <div class="kpi-strip">
+            <div class="kpi">
+                <div class="kpi-label">Teto de Referência</div>
+                <div class="kpi-value">100%</div>
+                <div class="kpi-note">Média Unificada</div>
+            </div>
+            <div class="kpi" style="border-left-color: var(--aniel)">
+                <div class="kpi-label">Último Consumo ANIEL</div>
+                <div class="kpi-value" id="kpiAniel" style="color:var(--aniel)">—</div>
+                <div class="kpi-note">% em relação ao teto</div>
+            </div>
+            <div class="kpi" style="border-left-color: var(--wms)">
+                <div class="kpi-label">Último Consumo WMS</div>
+                <div class="kpi-value" id="kpiWms" style="color:var(--wms)">—</div>
+                <div class="kpi-note">% do último dia</div>
             </div>
         </div>
 
-        <div class="badge"><strong>[ AO VIVO · SUPABASE ]</strong><br>consolidado_aniel + consolidado_wms</div>
-    </aside>
-
-    <main class="glass">
-        <div class="chart-box">
-            <div id="loading" class="loading-overlay">Carregando dados...</div>
+        <div class="glass chart-wrap">
+            <div id="loading">
+                <div class="spinner"></div>
+                <p id="loadingMsg">Carregando dados...</p>
+            </div>
             <canvas id="chart"></canvas>
         </div>
-    </main>
+    </div>
 </div>
 
 <script>
@@ -126,221 +244,393 @@ const SUPA_URL = 'https://tedclftyfdjktxeqjpcf.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlZGNsZnR5ZmRqa3R4ZXFqcGNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NTk1MjMsImV4cCI6MjA5MDAzNTUyM30.wvGWKq8sfgitGfD2mIJBZnCAg-wOHO2VdoBgqyofY5k';
 const db = window.supabase.createClient(SUPA_URL, SUPA_KEY);
 
-const elRegional  = document.getElementById('regionalFilter');
-const elSistema   = document.getElementById('sistemaFilter');
-const elSupervisor= document.getElementById('supervisorFilter');
-const elTecnico   = document.getElementById('tecnicoFilter');
-const elMaterial  = document.getElementById('materialFilter');
-const loadingDiv  = document.getElementById('loading');
-const ctx         = document.getElementById('chart').getContext('2d');
-
-let chartInstance = null;
-// Dados separados por origem
-let dataAniel = [];
-let dataWms   = [];
-
-Chart.defaults.color = '#94a3b8';
+Chart.defaults.color = '#64748b';
 Chart.defaults.font.family = "'Inter', sans-serif";
 
-// ─── Carrega os dois datasets em paralelo ────────────────────────────────────
-async function init() {
-    try {
-        const [resAniel, resWms] = await Promise.all([
-            db.from('consolidado_aniel').select('data,regional,supervisor,tecnico,cod__material,descricao,saldo'),
-            db.from('consolidado_wms').select('data,regional,supervisor,tecnico,cod__material,descricao,saldo')
-        ]);
+// ─── STATE ─────────────────────────────────────────────────────────────────
+let curReg    = 'SP';
+let anielRaw  = [];
+let wmsRaw    = [];
+let chartInst = null;
 
-        if (resAniel.error) throw resAniel.error;
-        if (resWms.error)   throw resWms.error;
-
-        dataAniel = resAniel.data || [];
-        dataWms   = resWms.data   || [];
-
-        populateFilters();
-        bindEvents();
-        loadingDiv.style.display = 'none';
-        render();
-    } catch (err) {
-        console.error(err);
-        loadingDiv.textContent = `Erro: ${err.message}`;
-        loadingDiv.style.color = '#ef4444';
-        loadingDiv.style.animation = 'none';
-    }
+// ─── NORMALIZAR ANIEL ────────────────────────────────────────────────────────────
+function normAniel(r) {
+    return {
+        data:       r.data || '',
+        supervisor: (r.supervisor || r.cod__supervisor || '').trim(),
+        tecnico:    (r.nome_da_equipe || r.tecnico || '').trim(),
+        // cod__material é o campo que corresponde ao cod__material da tabela de parâmetros
+        codMat:     (r.cod__material || '').trim(),
+        descMat:    (r.desc__material || r.descricao || r.descricao_auxiliar || '').trim(),
+        consumo:    parseFloat(r.aplicado || 0)
+    };
 }
 
-// ─── Popula filtros estáticos (supervisor + materiais) usando todos os dados ─
-function populateFilters() {
-    const supervisores = new Set();
-    const materiais    = new Map();
+// ─── NORMALIZAR WMS ──────────────────────────────────────────────────────────
+function normWms(r) {
+    return {
+        data:       r.data || '',
+        supervisor: r.supervisor || '',
+        tecnico:    (r.tecnico || '').trim(),
+        codMat:     r.codigo || r.part_number || '',
+        descMat:    r.nome || '',
+        consumo:    parseFloat(r.quantidade || 0)
+    };
+}
 
-    [...dataAniel, ...dataWms].forEach(r => {
-        if (r.supervisor && r.supervisor !== 'null') supervisores.add(r.supervisor);
-        if (r.cod__material && r.descricao) materiais.set(r.cod__material, r.descricao);
+// ─── BUSCAR COM PAGINAÇÃO ────────────────────────────────────────────────────
+async function fetchAll(table, norm) {
+    let all = [], from = 0;
+    while (true) {
+        const { data, error } = await db.from(table).select('*').range(from, from + 999);
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+        all = all.concat(data.map(norm));
+        if (data.length < 1000) break;
+        from += 1000;
+    }
+    return all;
+}
+
+
+// ─── CALCULAR ESTATÍSTICAS (teto unificado + dinâmico + σ) ──────────────────────
+// Calcula: média diária por técnico, desvio padrão, UCL/LCL como %
+// matFilter: 'ALL' (tudo) ou cod__material específico
+function calcStats(allRows, matFilter) {
+    const rows = matFilter && matFilter !== 'ALL'
+        ? allRows.filter(r => r.codMat === matFilter)
+        : allRows;
+
+    const byKey = new Map();
+    rows.forEach(r => {
+        if (!r.tecnico || !r.data || r.consumo <= 0) return;
+        const k = `${r.tecnico}|${r.data}`;
+        byKey.set(k, (byKey.get(k) || 0) + r.consumo);
     });
 
-    elSupervisor.innerHTML = '<option value="ALL">Todos os Supervisores</option>';
-    [...supervisores].sort().forEach(s => elSupervisor.appendChild(new Option(s, s)));
+    const vals = [...byKey.values()];
+    if (vals.length < 2) return { avg: 0, uclPct: 0, lclPct: 0 };
 
-    elMaterial.innerHTML = '<option value="ALL">Todos os Itens</option>';
-    [...materiais.entries()].sort((a,b) => a[1].localeCompare(b[1]))
-        .forEach(([code, desc]) => elMaterial.appendChild(new Option(desc, code)));
+    const sum = vals.reduce((a, b) => a + b, 0);
+    const avg = sum / vals.length;
+    const variance = vals.reduce((s, v) => s + Math.pow(v - avg, 2), 0) / vals.length;
+    const sigma = Math.sqrt(variance);
 
-    elSupervisor.disabled = false;
-    elMaterial.disabled   = false;
+    // Se avg for 0, evitamos divisão por zero
+    if (avg === 0) return { avg: 0, uclPct: 0, lclPct: 0 };
+
+    const uclPct = ((avg + 3 * sigma) / avg) * 100;
+    const lclPct = Math.max(0, ((avg - 3 * sigma) / avg) * 100);
+
+    return { avg, uclPct, lclPct };
+}
+
+// ─── POPULAR FILTROS ─────────────────────────────────────────────────────────
+function populateFilters(params) {
+    // Supervisores vindos dos dados históricos
+    const all  = [...anielRaw, ...wmsRaw];
+    const sups = new Set(all.filter(r => r.supervisor).map(r => r.supervisor));
+
+    const supSel = document.getElementById('supFilter');
+    supSel.innerHTML = '<option value="ALL">Todos os Supervisores</option>';
+    [...sups].sort().forEach(s => supSel.appendChild(new Option(s, s)));
+
+    // Materiais: cruzar parâmetros da regional com os que tiveram consumo > 0 nos dados carregados
+    const matsComConsumo = new Set(
+        [...anielRaw, ...wmsRaw]
+            .filter(r => r.consumo > 0 && r.codMat)
+            .map(r => r.codMat)
+    );
+
+    const matSel = document.getElementById('matFilter');
+    matSel.innerHTML = '<option value="ALL">Todos os Materiais</option>';
+    const sorted = [...params].sort((a, b) => (a.descricao || '').localeCompare(b.descricao || ''));
+    sorted.forEach(p => {
+        if (p.cod__material && p.descricao && matsComConsumo.has(p.cod__material)) {
+            matSel.appendChild(new Option(p.descricao, p.cod__material));
+        }
+    });
 
     refreshTecnicos();
 }
 
-// ─── Atualiza técnicos conforme sistema/regional/supervisor escolhidos ────────
 function refreshTecnicos() {
-    const sistem  = elSistema.value;
-    const regional= elRegional.value;
-    const sup     = elSupervisor.value;
-
-    // Escolhe a fonte certa ou todas
-    const sources = sistem === 'ANIEL' ? dataAniel : sistem === 'WMS' ? dataWms : [...dataAniel, ...dataWms];
-    const tecnicos = new Set();
-
-    sources.forEach(r => {
-        if (!r.tecnico || r.tecnico === 'null') return;
-        if (regional !== 'ALL' && r.regional !== regional) return;
-        if (sup !== 'ALL' && r.supervisor !== sup) return;
-        tecnicos.add(r.tecnico);
-    });
-
-    const prev = elTecnico.value;
-    elTecnico.innerHTML = '<option value="ALL">Todos os Técnicos</option>';
-    [...tecnicos].sort().forEach(t => elTecnico.appendChild(new Option(t, t)));
-    elTecnico.value = tecnicos.has(prev) ? prev : 'ALL';
-    elTecnico.disabled = false;
-}
-
-function bindEvents() {
-    // Mudança de sistema, regional ou supervisor → refresca técnicos E redesenha
-    [elSistema, elRegional, elSupervisor].forEach(el =>
-        el.addEventListener('change', () => { refreshTecnicos(); render(); })
+    const sup = document.getElementById('supFilter').value;
+    // Usa apenas os dados da regional atual — garante que só aparecem técnicos
+    // com consumo NESSA regional, evitando mostrar técnicos de SP no filtro de RJ e vice-versa
+    const all = [...anielRaw, ...wmsRaw];
+    const tecs = new Set(
+        all.filter(r =>
+            r.tecnico &&
+            r.consumo > 0 &&
+            (sup === 'ALL' || r.supervisor === sup)
+        ).map(r => r.tecnico)
     );
-    // Mudança de técnico ou material → só redesenha
-    [elTecnico, elMaterial].forEach(el => el.addEventListener('change', render));
+    const sel = document.getElementById('tecFilter');
+    const prev = sel.value;
+    sel.innerHTML = '<option value="ALL">Todos os Técnicos</option>';
+    [...tecs].sort().forEach(t => sel.appendChild(new Option(t, t)));
+    sel.value = tecs.has(prev) ? prev : 'ALL';
+    sel.disabled = false;
 }
 
-// ─── Filtra um dataset e agrega saldo por data ───────────────────────────────
-function aggregate(rows, regional, sup, tec, mat) {
+// ─── CARREGAR DADOS ───────────────────────────────────────────────────────────
+async function loadData() {
+    document.getElementById('loading').style.display = 'flex';
+
+    try {
+        // 1. Materiais da regional selecionada (parâmetros)
+        document.getElementById('loadingMsg').textContent = 'Carregando parâmetros...';
+        const { data: params, error: pErr } = await db
+            .from('parametros_parametros')
+            .select('cod__material,descricao,qtde_padrao')
+            .eq('regional', curReg);
+        if (pErr) throw pErr;
+
+        // 3. Histórico da regional selecionada
+        document.getElementById('loadingMsg').textContent = 'Carregando ANIEL...';
+        anielRaw = await fetchAll('historico_aniel_' + curReg.toLowerCase(), normAniel);
+        document.getElementById('loadingMsg').textContent = 'Carregando WMS...';
+        wmsRaw   = await fetchAll('historico_wms_' + curReg.toLowerCase(), normWms);
+
+
+        populateFilters(params || []);
+        document.getElementById('loading').style.display = 'none';
+        render();
+    } catch(e) {
+        document.getElementById('loadingMsg').textContent = 'Erro: ' + e.message;
+        document.getElementById('loadingMsg').style.color = '#f43f5e';
+    }
+}
+
+// ─── FILTRAR E AGREGAR ────────────────────────────────────────────────────────
+function aggregate(rows, globalAvg, sup, tec, mat) {
+    const filtered = rows.filter(r => {
+        if (sup !== 'ALL' && r.supervisor !== sup) return false;
+        if (tec !== 'ALL' && r.tecnico !== tec)    return false;
+        if (mat !== 'ALL' && r.codMat !== mat)     return false;
+        return r.data && r.consumo > 0;
+    });
+
+    // Quando "Todos os Técnicos" estiver selecionado, calculamos a MÉDIA por técnico
+    // por data, ao invés da SOMA — evita percentuais inflados de 7000%+
+    if (tec === 'ALL') {
+        // Acumular por data+tecnico para depois tirar a média
+        const byDateTec = new Map(); // data -> Map<tecnico, soma>
+        filtered.forEach(r => {
+            if (!byDateTec.has(r.data)) byDateTec.set(r.data, new Map());
+            const tecMap = byDateTec.get(r.data);
+            tecMap.set(r.tecnico, (tecMap.get(r.tecnico) || 0) + r.consumo);
+        });
+
+        const result = new Map();
+        for (const [d, tecMap] of byDateTec) {
+            const vals = [...tecMap.values()];
+            const avg  = vals.reduce((a, b) => a + b, 0) / vals.length;
+            result.set(d, globalAvg > 0 ? ((avg / globalAvg) * 100) : 0);
+        }
+        return result;
+    }
+
+    // Técnico específico selecionado: usa a soma direta
     const byDate = new Map();
+    filtered.forEach(r => byDate.set(r.data, (byDate.get(r.data) || 0) + r.consumo));
 
-    rows.forEach(r => {
-        if (regional !== 'ALL' && r.regional !== regional) return;
-        if (sup      !== 'ALL' && r.supervisor !== sup)    return;
-        if (tec      !== 'ALL' && r.tecnico !== tec)       return;
-        if (mat      !== 'ALL' && r.cod__material !== mat) return;
-
-        const d = r.data; if (!d) return;
-        const v = parseFloat(r.saldo || 0);
-        byDate.set(d, (byDate.get(d) || 0) + v);
-    });
-
-    return byDate; // Map<date, totalSaldo>
+    const result = new Map();
+    for (const [d, v] of byDate) {
+        result.set(d, globalAvg > 0 ? ((v / globalAvg) * 100) : 0);
+    }
+    return result;
 }
 
-// ─── Renderiza ───────────────────────────────────────────────────────────────
+// ─── RENDERIZAR ───────────────────────────────────────────────────────────────
 function render() {
-    const sistem   = elSistema.value;
-    const regional = elRegional.value;
-    const sup      = elSupervisor.value;
-    const tec      = elTecnico.value;
-    const mat      = elMaterial.value;
+    const sup = document.getElementById('supFilter').value;
+    const tec = document.getElementById('tecFilter').value;
+    const mat = document.getElementById('matFilter').value;
 
-    const anielByDate = (sistem === 'WMS')   ? new Map() : aggregate(dataAniel, regional, sup, tec, mat);
-    const wmsByDate   = (sistem === 'ANIEL') ? new Map() : aggregate(dataWms,   regional, sup, tec, mat);
+    // A. Teto unificado (ANIEL + WMS) + B. dinâmico por material
+    const combinedRows = [...anielRaw, ...wmsRaw];
+    const stats = calcStats(combinedRows, mat);
 
-    const allDates  = new Set([...anielByDate.keys(), ...wmsByDate.keys()]);
-    const sorted    = [...allDates].sort();
+    // C. Porcentagem com o mesmo teto para ambos os sistemas
+    const anielByDate = aggregate(anielRaw, stats.avg, sup, tec, mat);
+    const wmsByDate   = aggregate(wmsRaw,   stats.avg, sup, tec, mat);
 
-    const labels = [], ptAniel = [], ptWms = [];
+    const allDates = new Set([...anielByDate.keys(), ...wmsByDate.keys()]);
+    const sorted   = [...allDates].sort();
 
-    sorted.forEach(d => {
-        const sp = d.split('-');
-        labels.push(sp.length === 3 ? `${sp[2]}/${sp[1]}` : d);
-        ptAniel.push(anielByDate.has(d) ? anielByDate.get(d).toFixed(2) : null);
-        ptWms.push  (wmsByDate.has(d)   ? wmsByDate.get(d).toFixed(2)   : null);
-    });
+    const labels   = sorted.map(d => { const [y,m,dd] = d.split('-'); return `${dd}/${m}`; });
+    const ptAniel  = sorted.map(d => anielByDate.has(d) ? anielByDate.get(d).toFixed(2) : null);
+    const ptWms    = sorted.map(d => wmsByDate.has(d)   ? wmsByDate.get(d).toFixed(2)   : null);
+    const tetoLine = sorted.map(() => 100);
+    const uclLine  = sorted.map(() => parseFloat(stats.uclPct.toFixed(1)));
+    const lclLine  = sorted.map(() => parseFloat(stats.lclPct.toFixed(1)));
 
-    drawChart(labels, ptAniel, ptWms, tec, sup);
+    // KPIs
+    const lastAniel = ptAniel.filter(v => v !== null).pop();
+    const lastWms   = ptWms.filter(v => v !== null).pop();
+    document.getElementById('kpiAniel').textContent = lastAniel != null ? lastAniel + '%' : '—';
+    document.getElementById('kpiWms').textContent   = lastWms   != null ? lastWms   + '%' : '—';
+
+    drawChart(labels, ptAniel, ptWms, tetoLine, uclLine, lclLine, sup, tec);
 }
 
-function drawChart(labels, ptAniel, ptWms, tec, sup) {
-    if (chartInstance) chartInstance.destroy();
 
-    let yLabel = 'Saldo Total por Data';
-    if (tec !== 'ALL')  yLabel = `Saldo de: ${tec}`;
-    else if (sup !== 'ALL') yLabel = `Saldo Total da Equipe de: ${sup}`;
+function drawChart(labels, ptAniel, ptWms, tetoLine, uclLine, lclLine, sup, tec) {
+    if (chartInst) chartInst.destroy();
+    const ctx = document.getElementById('chart').getContext('2d');
 
-    const datasets = [];
+    let chartTitle = 'Desempenho Diário vs Teto Estatístico (±3σ)';
+    if (tec !== 'ALL') chartTitle = `Análise Técnico: ${tec}`;
+    else if (sup !== 'ALL') chartTitle = `Análise Supervisor: ${sup}`;
 
-    if (ptAniel.some(v => v !== null)) {
-        datasets.push({
-            label: 'Saldo ANIEL',
-            data: ptAniel,
-            borderColor: '#3b82f6',
-            backgroundColor: 'rgba(59,130,246,.1)',
-            borderWidth: 3,
-            pointBackgroundColor: '#3b82f6',
-            pointBorderColor: '#fff',
-            pointRadius: 4, pointHoverRadius: 7,
-            spanGaps: true, fill: false, tension: 0.4
-        });
-    }
+    const gradA = ctx.createLinearGradient(0, 0, 0, 400);
+    gradA.addColorStop(0, 'rgba(220, 38, 38, 0.1)');
+    gradA.addColorStop(1, 'rgba(220, 38, 38, 0.0)');
 
-    if (ptWms.some(v => v !== null)) {
-        datasets.push({
-            label: 'Saldo WMS',
-            data: ptWms,
-            borderColor: '#10b981',
-            backgroundColor: 'rgba(16,185,129,.1)',
-            borderWidth: 3,
-            pointBackgroundColor: '#10b981',
-            pointBorderColor: '#fff',
-            pointRadius: 4, pointHoverRadius: 7,
-            spanGaps: true, fill: false, tension: 0.4
-        });
-    }
+    const gradW = ctx.createLinearGradient(0, 0, 0, 400);
+    gradW.addColorStop(0, 'rgba(75, 83, 32, 0.1)');
+    gradW.addColorStop(1, 'rgba(75, 83, 32, 0.0)');
 
-    if (datasets.length === 0) {
-        // nenhum dado → gráfico vazio com mensagem
-        datasets.push({ label: 'Sem dados para o filtro selecionado', data: [], borderColor: 'transparent' });
-    }
-
-    chartInstance = new Chart(ctx, {
+    chartInst = new Chart(ctx, {
         type: 'line',
-        data: { labels, datasets },
+        data: {
+            labels,
+            datasets: [
+                {
+                    label: 'UCL (+3σ)',
+                    data: uclLine,
+                    borderColor: '#94a3b8',
+                    borderWidth: 1,
+                    borderDash: [5, 5],
+                    pointRadius: 0,
+                    fill: false,
+                    tension: 0,
+                    order: 4
+                },
+                {
+                    label: 'Teto (100%)',
+                    data: tetoLine,
+                    borderColor: '#0f172a',
+                    borderWidth: 2,
+                    borderDash: [10, 5],
+                    pointRadius: 0,
+                    fill: false,
+                    tension: 0,
+                    order: 3
+                },
+                {
+                    label: 'LCL (-3σ)',
+                    data: lclLine,
+                    borderColor: '#94a3b8',
+                    borderWidth: 1,
+                    borderDash: [5, 5],
+                    pointRadius: 0,
+                    fill: false,
+                    tension: 0,
+                    order: 5
+                },
+                {
+                    label: 'ANIEL (%)',
+                    data: ptAniel,
+                    borderColor: '#dc2626',
+                    backgroundColor: gradA,
+                    borderWidth: 3,
+                    pointBackgroundColor: '#dc2626',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    fill: true,
+                    tension: 0.4,
+                    spanGaps: true,
+                    order: 0
+                },
+                {
+                    label: 'WMS (%)',
+                    data: ptWms,
+                    borderColor: '#4b5320',
+                    backgroundColor: gradW,
+                    borderWidth: 3,
+                    pointBackgroundColor: '#4b5320',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    fill: true,
+                    tension: 0.4,
+                    spanGaps: true,
+                    order: 1
+                }
+            ]
+        },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
             plugins: {
-                legend: {
-                    position: 'top',
-                    labels: { color:'#f8fafc', usePointStyle:true, padding:20, font:{ size:13 } }
-                },
+                legend: { display: false },
                 tooltip: {
-                    backgroundColor: 'rgba(15,23,42,.9)',
-                    titleColor: '#fff', bodyColor: '#cbd5e1',
-                    borderColor: 'rgba(255,255,255,.1)', borderWidth:1, padding:12
+                    backgroundColor: '#fff',
+                    titleColor: '#0f172a',
+                    bodyColor: '#64748b',
+                    borderColor: '#e2e8f0',
+                    borderWidth: 1,
+                    padding: 12,
+                    boxPadding: 6,
+                    usePointStyle: true,
+                    callbacks: {
+                        label: ctx => ` ${ctx.dataset.label}: ${parseFloat(ctx.raw).toFixed(1)}%`
+                    }
+                },
+                title: {
+                    display: true,
+                    text: chartTitle,
+                    color: '#0f172a',
+                    font: { size: 14, weight: 'bold' },
+                    padding: { bottom: 20 }
                 }
             },
             scales: {
-                x: { grid: { color: 'rgba(255,255,255,.05)' } },
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#64748b', font: { size: 11 } }
+                },
                 y: {
                     beginAtZero: true,
-                    grid: { color: 'rgba(255,255,255,.05)' },
-                    title: { display:true, text: yLabel, color:'#94a3b8' }
+                    grid: { color: '#f1f5f9' },
+                    ticks: {
+                        color: '#64748b',
+                        font: { size: 11 },
+                        callback: v => v + '%'
+                    },
+                    title: {
+                        display: true,
+                        text: 'Atingimento do Teto (%)',
+                        color: '#94a3b8', font: { size: 10, weight: '600' }
+                    }
                 }
             }
         }
     });
 }
 
-window.onload = init;
+// ─── EVENTOS ─────────────────────────────────────────────────────────────────
+document.querySelectorAll('.reg-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        document.querySelectorAll('.reg-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        curReg = tab.dataset.reg;
+        loadData();
+    });
+});
+
+document.getElementById('supFilter').addEventListener('change', () => { refreshTecnicos(); render(); });
+document.getElementById('tecFilter').addEventListener('change', render);
+document.getElementById('matFilter').addEventListener('change', render);
+
+window.onload = loadData;
 </script>
 </body>
 </html>
