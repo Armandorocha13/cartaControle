@@ -44,7 +44,7 @@
             border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
         .fg label { display: block; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; }
-        select {
+        select, input[type="text"], input[type="date"] {
             width: 100%; padding: 0.6rem; border-radius: 4px; border: 1px solid var(--border);
             font-size: 0.85rem; outline: none; cursor: pointer;
         }
@@ -69,7 +69,8 @@
         .indent-1 { padding-left: 2rem !important; }
         .indent-2 { padding-left: 4rem !important; }
 
-        .val { text-align: right; font-weight: 700; width: 150px; }
+        .val { text-align: right; font-weight: 700; width: 150px; white-space: normal !important; }
+        .val div { display: block; line-height: 1.2; }
         .unit { font-size: 0.7rem; color: var(--muted); font-weight: 400; margin-left: 4px; }
         .empty { padding: 3rem; text-align: center; color: var(--muted); }
 
@@ -95,7 +96,7 @@
 <header>
     <div class="header-left">
         <img src="logo.jpeg" alt="FFA logo">
-        <h1>Relatório Analítico - Matrix</h1>
+        <h1>Relatório Analítico</h1>
     </div>
     <a href="dashboard.html" class="btn-back">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
@@ -132,6 +133,18 @@
         </select>
     </div>
     <div class="fg">
+        <label>Data Início</label>
+        <select id="dateStart">
+            <option value="ALL">TODAS</option>
+        </select>
+    </div>
+    <div class="fg">
+        <label>Data Fim</label>
+        <select id="dateEnd">
+            <option value="ALL">TODAS</option>
+        </select>
+    </div>
+    <div class="fg" style="grid-column: span 2;">
         <label>Busca Rápida (Técnico)</label>
         <div class="search-box">
             <input type="text" id="searchInput" placeholder="Nome do técnico...">
@@ -143,10 +156,11 @@
     <table id="matrixTable">
         <thead>
             <tr>
-                <th style="width: 40%;">Hierarquia</th>
+                <th style="width: 35%;">Hierarquia</th>
                 <th id="colAniel" class="val">ANIEL</th>
                 <th id="colWms" class="val">WMS</th>
                 <th id="colTotal" class="val">TOTAL</th>
+                <th style="width: 150px; text-align: center;">Tendência</th>
             </tr>
         </thead>
         <tbody id="tableBody">
@@ -163,31 +177,107 @@ const db = window.supabase.createClient(SUPA_URL, SUPA_KEY);
 let rawAniel = [];
 let rawWms = [];
 
-function getUnit(mat) {
-    if (!mat) return 'un';
-    const m = mat.toUpperCase();
+function parseNum(val) {
+    if (!val) return 0;
+    if (typeof val === 'number') return val;
+    // Remove qualquer caractere que não seja número, vírgula ou ponto (ex: R$, %)
+    // Mas aqui focamos em trocar vírgula por ponto para parsing correto
+    const s = String(val).trim().replace(',', '.');
+    const n = parseFloat(s);
+    return isNaN(n) ? 0 : n;
+}
+
+function getUnit(desc, unit) {
+    if (unit) {
+        const u = unit.trim().toUpperCase();
+        if (u === 'M' || u === 'MT' || u === 'METRO' || u === 'METROS' || u === 'METRAGEM') return 'm';
+        if (u === 'UN' || u === 'PC' || u === 'PÇ' || u === 'UNID' || u === 'UNIDADE' || u === 'CJ' || u === 'JG') return 'un';
+    }
+    if (!desc) return 'un';
+    const m = desc.toUpperCase();
     if (m.includes('CABO') || m.includes('FIO') || m.includes('DROP') || m.includes('CORDAO')) return 'm';
     return 'un';
 }
 
 function normAniel(r) {
+    const desc = (r.desc__material || r.descricao || '').trim().toUpperCase();
+    const unit = getUnit(desc, r.unidade);
     return {
+        data: r.data || '',
         supervisor: (r.supervisor || r.cod__supervisor || 'SEM SUPERVISOR').trim().toUpperCase(),
         tecnico: (r.nome_da_equipe || r.tecnico || 'SEM TÉCNICO').trim().toUpperCase(),
         codMat: (r.cod__material || '').trim(),
-        descMat: (r.desc__material || r.descricao || '').trim().toUpperCase(),
-        consumo: parseFloat(r.aplicado || 0)
+        descMat: desc,
+        unit: unit,
+        consumo: parseNum(r.aplicado)
     };
 }
 
 function normWms(r) {
+    const desc = (r.nome || '').trim().toUpperCase();
+    const unit = getUnit(desc, r.unidade);
     return {
+        data: r.data || '',
         supervisor: (r.supervisor || 'SEM SUPERVISOR').trim().toUpperCase(),
         tecnico: (r.tecnico || 'SEM TÉCNICO').trim().toUpperCase(),
         codMat: (r.codigo || r.part_number || '').trim(),
-        descMat: (r.nome || '').trim().toUpperCase(),
-        consumo: parseFloat(r.quantidade || 0)
+        descMat: desc,
+        unit: unit,
+        consumo: parseNum(r.quantidade)
     };
+}
+
+function formatVal(m, un) {
+    let res = '';
+    if (m > 0) res += `<div>${m.toLocaleString('pt-BR', {minimumFractionDigits: 0, maximumFractionDigits: 1})}<span class="unit">m</span></div>`;
+    if (un > 0) res += `<div>${un.toLocaleString('pt-BR', {minimumFractionDigits: 0, maximumFractionDigits: 1})}<span class="unit">un</span></div>`;
+    return res || '0';
+}
+
+function getTrend(history, sysFilter) {
+    const dates = Object.keys(history).sort();
+    if (dates.length < 2) return { icon: '─', color: '#94a3b8', label: 'Estável', values: [] };
+
+    const values = dates.map(d => {
+        const v = history[d];
+        if (sysFilter === 'BOTH') return v.aniel + v.wms;
+        if (sysFilter === 'WMS') return v.wms;
+        return v.aniel;
+    });
+
+    // Linear Regression
+    let n = values.length, sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+    for (let i = 0; i < n; i++) {
+        sumX += i; sumY += values[i];
+        sumXY += i * values[i]; sumX2 += i * i;
+    }
+    const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+    const avg = sumY / n;
+    const threshold = avg * 0.05; // 5% var
+
+    let res = { icon: '→', color: '#94a3b8', label: 'Estável', values };
+    if (slope > threshold) res = { icon: '↗', color: '#10b981', label: 'Crescente', values };
+    if (slope < -threshold) res = { icon: '↘', color: '#ef4444', label: 'Decrescente', values };
+    
+    return res;
+}
+
+function renderSparkline(values) {
+    if (!values || values.length < 2) return '';
+    const w = 80, h = 20;
+    const max = Math.max(...values, 1), min = Math.min(...values);
+    const rng = (max - min) || 1;
+    const pts = values.map((v, i) => `${(i/(values.length-1))*w},${h - ((v-min)/rng)*h}`).join(' ');
+    return `<svg width="${w}" height="${h}" style="vertical-align:middle;margin-left:8px;overflow:visible"><polyline fill="none" stroke="currentColor" stroke-width="2" points="${pts}"/></svg>`;
+}
+
+function formatTrendCell(trend) {
+    return `
+        <div style="display:flex; align-items:center; justify-content:center; gap:8px; color:${trend.color}; font-weight:800;">
+            <span title="${trend.label}" style="font-size:1.2rem">${trend.icon}</span>
+            <div class="sparkline">${renderSparkline(trend.values)}</div>
+        </div>
+    `;
 }
 
 async function fetchAll(table, norm) {
@@ -234,6 +324,19 @@ function populateSelectors() {
     [...mats.entries()].sort((a,b) => a[1].localeCompare(b[1])).forEach(([code, desc]) => {
         matSel.appendChild(new Option(desc, code));
     });
+
+    const dates = new Set([...rawAniel, ...rawWms].map(r => r.data).filter(d => d));
+    const sortedDates = [...dates].sort().reverse();
+    const dsSel = document.getElementById('dateStart');
+    const deSel = document.getElementById('dateEnd');
+    dsSel.innerHTML = '<option value="ALL">TODAS</option>';
+    deSel.innerHTML = '<option value="ALL">TODAS</option>';
+    sortedDates.forEach(d => {
+        const parts = d.split('-');
+        const label = `${parts[2]}/${parts[1]}/${parts[0]}`;
+        dsSel.appendChild(new Option(label, d));
+        deSel.appendChild(new Option(label, d));
+    });
 }
 
 function toggleRow(id) {
@@ -270,6 +373,9 @@ function renderTable() {
     document.getElementById('colWms').style.display   = sysFilter === 'ANIEL' ? 'none' : 'table-cell';
     document.getElementById('colTotal').style.display = sysFilter === 'BOTH' ? 'table-cell' : 'none';
 
+    const ds = document.getElementById('dateStart').value;
+    const de = document.getElementById('dateEnd').value;
+
     // Agrupar
     const matrix = {}; 
 
@@ -278,14 +384,27 @@ function renderTable() {
             if (supFilter !== 'ALL' && r.supervisor !== supFilter) return;
             if (matFilter !== 'ALL' && r.codMat !== matFilter) return;
             if (search && !r.tecnico.toLowerCase().includes(search)) return;
+            if (ds !== 'ALL' && r.data < ds) return;
+            if (de !== 'ALL' && r.data > de) return;
 
-            if (!matrix[r.supervisor]) matrix[r.supervisor] = {};
-            if (!matrix[r.supervisor][r.tecnico]) matrix[r.supervisor][r.tecnico] = {};
+            if (!matrix[r.supervisor]) matrix[r.supervisor] = { tecs: {}, history: {} };
+            const s = matrix[r.supervisor];
+
+            if (!s.tecs[r.tecnico]) s.tecs[r.tecnico] = { mats: {}, history: {} };
+            const t = s.tecs[r.tecnico];
+
             const key = r.descMat || r.codMat;
-            if (!matrix[r.supervisor][r.tecnico][key]) {
-                matrix[r.supervisor][r.tecnico][key] = { aniel: 0, wms: 0, unit: getUnit(key) };
+            if (!t.mats[key]) {
+                t.mats[key] = { aniel: 0, wms: 0, unit: r.unit };
             }
-            matrix[r.supervisor][r.tecnico][key][type] += r.consumo;
+            const m = t.mats[key];
+            m[type] += r.consumo;
+
+            if (!t.history[r.data]) t.history[r.data] = { aniel: 0, wms: 0 };
+            t.history[r.data][type] += r.consumo;
+
+            if (!s.history[r.data]) s.history[r.data] = { aniel: 0, wms: 0 };
+            s.history[r.data][type] += r.consumo;
         });
     };
 
@@ -297,54 +416,68 @@ function renderTable() {
 
     const sortedSups = Object.keys(matrix).sort();
     if (sortedSups.length === 0) {
-        body.innerHTML = '<tr><td colspan="4" class="empty">Nenhum dado encontrado.</td></tr>';
+        body.innerHTML = '<tr><td colspan="5" class="empty">Nenhum dado encontrado.</td></tr>';
         return;
     }
 
     sortedSups.forEach((sup, sIdx) => {
         const supId = `sup-${sIdx}`;
-        let supAniel = 0, supWms = 0;
-        const tecs = matrix[sup];
+        let sAnielM = 0, sAnielUn = 0, sWmsM = 0, sWmsUn = 0;
+        const sData = matrix[sup];
+        const tecs = sData.tecs;
         let tecHtml = '';
 
         Object.keys(tecs).sort().forEach((tec, tIdx) => {
             const tecId = `tec-${sIdx}-${tIdx}`;
-            let tecAniel = 0, tecWms = 0;
-            const mats = tecs[tec];
+            let tAnielM = 0, tAnielUn = 0, tWmsM = 0, tWmsUn = 0;
+            const tData = tecs[tec];
+            const mats = tData.mats;
             let matHtml = '';
 
             Object.keys(mats).sort().forEach(mat => {
                 const vals = mats[mat];
-                tecAniel += vals.aniel;
-                tecWms += vals.wms;
+                if (vals.unit === 'm') {
+                    tAnielM += vals.aniel;
+                    tWmsM += vals.wms;
+                } else {
+                    tAnielUn += vals.aniel;
+                    tWmsUn += vals.wms;
+                }
+                const resKey = mat; // Descrição já normalizada
                 matHtml += `
                     <tr class="mat-row row-hidden" data-parent="${tecId}">
-                        <td class="indent-2">${mat}</td>
-                        <td class="val" style="${sysFilter === 'WMS' ? 'display:none' : ''}">${vals.aniel.toLocaleString()}<span class="unit">${vals.unit}</span></td>
-                        <td class="val" style="${sysFilter === 'ANIEL' ? 'display:none' : ''}">${vals.wms.toLocaleString()}<span class="unit">${vals.unit}</span></td>
-                        <td class="val" style="${sysFilter === 'BOTH' ? '' : 'display:none'}">${(vals.aniel + vals.wms).toLocaleString()}<span class="unit">${vals.unit}</span></td>
+                        <td class="indent-2">${resKey}</td>
+                        <td class="val" style="${sysFilter === 'WMS' ? 'display:none' : ''}">${vals.aniel.toLocaleString('pt-BR', {minimumFractionDigits: 0, maximumFractionDigits: 1})}<span class="unit">${vals.unit}</span></td>
+                        <td class="val" style="${sysFilter === 'ANIEL' ? 'display:none' : ''}">${vals.wms.toLocaleString('pt-BR', {minimumFractionDigits: 0, maximumFractionDigits: 1})}<span class="unit">${vals.unit}</span></td>
+                        <td class="val" style="${sysFilter === 'BOTH' ? '' : 'display:none'}">${(vals.aniel + vals.wms).toLocaleString('pt-BR', {minimumFractionDigits: 0, maximumFractionDigits: 1})}<span class="unit">${vals.unit}</span></td>
+                        <td></td>
                     </tr>
                 `;
             });
 
-            supAniel += tecAniel;
-            supWms += tecWms;
+            sAnielM += tAnielM; sAnielUn += tAnielUn;
+            sWmsM += tWmsM; sWmsUn += tWmsUn;
+
+            const tTrend = getTrend(tData.history, sysFilter);
             tecHtml += `
                 <tr class="tec-row row-hidden" data-id="${tecId}" data-parent="${supId}" onclick="toggleRow('${tecId}')">
                     <td class="indent-1"><span class="toggle-btn">▶</span> ${tec}</td>
-                    <td class="val" style="${sysFilter === 'WMS' ? 'display:none' : ''}">${tecAniel.toLocaleString()}</td>
-                    <td class="val" style="${sysFilter === 'ANIEL' ? 'display:none' : ''}">${tecWms.toLocaleString()}</td>
-                    <td class="val" style="${sysFilter === 'BOTH' ? '' : 'display:none'}">${(tecAniel + tecWms).toLocaleString()}</td>
+                    <td class="val" style="${sysFilter === 'WMS' ? 'display:none' : ''}">${formatVal(tAnielM, tAnielUn)}</td>
+                    <td class="val" style="${sysFilter === 'ANIEL' ? 'display:none' : ''}">${formatVal(tWmsM, tWmsUn)}</td>
+                    <td class="val" style="${sysFilter === 'BOTH' ? '' : 'display:none'}">${formatVal(tAnielM + tWmsM, tAnielUn + tWmsUn)}</td>
+                    <td>${formatTrendCell(tTrend)}</td>
                 </tr>
             ` + matHtml;
         });
 
+        const sTrend = getTrend(sData.history, sysFilter);
         body.innerHTML += `
             <tr class="sup-row" data-id="${supId}" onclick="toggleRow('${supId}')">
                 <td><span class="toggle-btn">▶</span> ${sup}</td>
-                <td class="val" style="${sysFilter === 'WMS' ? 'display:none' : ''}">${supAniel.toLocaleString()}</td>
-                <td class="val" style="${sysFilter === 'ANIEL' ? 'display:none' : ''}">${supWms.toLocaleString()}</td>
-                <td class="val" style="${sysFilter === 'BOTH' ? '' : 'display:none'}">${(supAniel + supWms).toLocaleString()}</td>
+                <td class="val" style="${sysFilter === 'WMS' ? 'display:none' : ''}">${formatVal(sAnielM, sAnielUn)}</td>
+                <td class="val" style="${sysFilter === 'ANIEL' ? 'display:none' : ''}">${formatVal(sWmsM, sWmsUn)}</td>
+                <td class="val" style="${sysFilter === 'BOTH' ? '' : 'display:none'}">${formatVal(sAnielM + sWmsM, sAnielUn + sWmsUn)}</td>
+                <td>${formatTrendCell(sTrend)}</td>
             </tr>
         ` + tecHtml;
     });
@@ -355,6 +488,8 @@ document.getElementById('sysFilter').addEventListener('change', renderTable);
 document.getElementById('supFilter').addEventListener('change', renderTable);
 document.getElementById('matFilter').addEventListener('change', renderTable);
 document.getElementById('searchInput').addEventListener('input', renderTable);
+document.getElementById('dateStart').addEventListener('change', renderTable);
+document.getElementById('dateEnd').addEventListener('change', renderTable);
 
 window.onload = loadData;
 </script>
