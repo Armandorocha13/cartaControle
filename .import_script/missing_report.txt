@@ -1,0 +1,87 @@
+Mapping loaded: 275 technicians.
+Checking historico_aniel_sp...
+Found 31 technicians with missing supervisors in historico_aniel_sp.
+  - Técnico: NAZIEL BARBOSA DE LIMA -> Supervisor Sugerido: ANDERSON DA SILVA
+  - Técnico: ALCIDES GONCALVES -> Supervisor Sugerido: SERGIO LUIZ DE OLIVEIRA
+  - Técnico: ALEXSANDRO SOUZA DE FREITAS -> Supervisor Sugerido: ANDERSON DA SILVA
+  - Técnico: ANDERSON DA SILVA -> Supervisor Sugerido: ANDERSON DA SILVA
+  - Técnico: ANTHONY DA SILVA GONCALVES -> Supervisor Sugerido: ANDERSON DA SILVA
+  - Técnico: CESAR FABRICIO DE SOUZA -> Supervisor Sugerido: NÃO ENCONTRADO NO EXCEL
+  - Técnico: CLAYTON DOUGLAS GOMES DE VASCONCELOS -> Supervisor Sugerido: CLEITON LUIZ GRACIANO
+  - Técnico: CLEITON LUIZ GRACIANO -> Supervisor Sugerido: CLEITON LUIZ GRACIANO
+  - Técnico: DIEGO VINICIUS SOARES -> Supervisor Sugerido: ANDERSON DA SILVA
+  - Técnico: FABIO CARACA DAVID -> Supervisor Sugerido: WILLIAM AMORIM DA SILVA
+  - Técnico: FLAVIO SILVEIRA DA SILVA -> Supervisor Sugerido: FLAVIO SILVEIRA DA SILVA
+  - Técnico: GABRIEL HENRIQUE DE BULHOES -> Supervisor Sugerido: ANDERSON DA SILVA
+  - Técnico: GLEISON DE MORAES GARCIA -> Supervisor Sugerido: ANDERSON DA SILVA
+  - Técnico: GUSTAVO PASCHOAL DA NATIVIDADE -> Supervisor Sugerido: LEANDRO APARECIDO MOREIRA
+  - Técnico: HILDERNANDO AGOSTINHO BENTO -> Supervisor Sugerido: WILLIAM AMORIM DA SILVA
+  - Técnico: IVAN GONÇALVES TOMÉ -> Supervisor Sugerido: NÃO ATRELADO
+  - Técnico: JAIR DE OLIVEIRA SANTANA -> Supervisor Sugerido: NÃO ENCONTRADO NO EXCEL
+  - Técnico: JOCEMAR SILVA DOS SANTOS -> Supervisor Sugerido: LEANDRO APARECIDO MOREIRA
+  - Técnico: JOILSON SILVA BARBOSA -> Supervisor Sugerido: SERGIO LUIZ DE OLIVEIRA
+  - Técnico: LEANDRO APARECIDO MOREIRA -> Supervisor Sugerido: LEANDRO APARECIDO MOREIRA
+  - Técnico: MANOEL BORGES DE SOUSA -> Supervisor Sugerido: NÃO ENCONTRADO NO EXCEL
+  - Técnico: MARCILIO BATISTA -> Supervisor Sugerido: LEANDRO APARECIDO MOREIRA
+  - Técnico: MARCOS GOMES DE OLIVEIRA -> Supervisor Sugerido: LEANDRO APARECIDO MOREIRA
+  - Técnico: PAULO FRANCISCO DOS SANTOS RAMOS -> Supervisor Sugerido: ANDERSON DA SILVA
+  - Técnico: REGINALDO CHAGAS JUNIOR -> Supervisor Sugerido: FLAVIO SILVEIRA DA SILVA
+  - Técnico: SERGIO LUIZ DE OLIVEIRA -> Supervisor Sugerido: SERGIO LUIZ DE OLIVEIRA
+  - Técnico: SILVIO DOMINGOS DOS SANTOS -> Supervisor Sugerido: SILVIO DOMINGOS DOS SANTOS
+  - Técnico: VITOR HENRIQUE DE LIMA -> Supervisor Sugerido: LEANDRO APARECIDO MOREIRA
+  - Técnico: WEMERSON DA SILVA FERREIRA -> Supervisor Sugerido: NÃO ENCONTRADO NO EXCEL
+  - Técnico: WILLIAM AMORIM DA SILVA -> Supervisor Sugerido: NÃO ENCONTRADO NO EXCEL
+  - Técnico: WILLIANS DA SILVA LIMA -> Supervisor Sugerido: SERGIO LUIZ DE OLIVEIRA
+Checking historico_aniel_rj...
+Found 49 technicians with missing supervisors in historico_aniel_rj.
+  - Técnico: ALBERTO CANDIDO -> Supervisor Sugerido: NÃO ENCONTRADO NO EXCEL
+  - Técnico: ALESSANDRA SILVA DE CARVALHO MONTEIRO -> Supervisor Sugerido: NÃO ENCONTRADO NO EXCEL
+  - Técnico: ANDRE DOMINGOS CABRAL -> Supervisor Sugerido: FLAVIO SENA
+  - Técnico: BRUNO PRAZERES DE MELLO -> Supervisor Sugerido: FELIPE PEREIRA
+  - Técnico: ANTONIO LUIZ DE SOUZA CAMPOS JUNIOR -> Supervisor Sugerido: DECIO FERREIRA
+  - Técnico: BRUNO NUNES MIRANDA -> Supervisor Sugerido: MARCOS ANTONIO BERNARDES DE AZEVEDO
+  - Técnico: BRUNO PEDREIRA NUNES -> Supervisor Sugerido: MARCOS ANTONIO BERNARDES DE AZEVEDO
+  - Técnico: CARLOS ANDRE LIMA PETRINI -> Supervisor Sugerido: LEONARDO DE OLIVEIRA CARNEIRO
+  - Técnico: CESAR PEREIRA DOS SANTOS -> Supervisor Sugerido: FELIPE PEREIRA
+  - Técnico: DANILO DA SILVA GOMES -> Supervisor Sugerido: HENDRIX NONATO
+  - Técnico: FLAVIO NUNES DE SENA -> Supervisor Sugerido: FLAVIO SENA
+  - Técnico: FRANCISCO ERIANO FELIX MOUZINHO -> Supervisor Sugerido: FELIPE GOMES PEREIRA
+  - Técnico: FRANCISCO MATHEUS FREITAS LUCIANO -> Supervisor Sugerido: LEONARDO DE OLIVEIRA CARNEIRO
+  - Técnico: GABRIEL RAMON COSTA GONCALVES -> Supervisor Sugerido: FLAVIO SENA
+  - Técnico: GENILSON SAMPAIO CARVALHO -> Supervisor Sugerido: LEONARDO DE OLIVEIRA CARNEIRO
+  - Técnico: GILCIMAR GIESTEIRA DA COSTA -> Supervisor Sugerido: NÃO ATRELADO
+  - Técnico: GUTEMBERG WILSON DENUNCI GOMES DA SILVA -> Supervisor Sugerido: MARCOS ANTONIO BERNARDES DE AZEVEDO
+  - Técnico: HUGO LEONARDO DE MEDEIROS COELHO -> Supervisor Sugerido: FLAVIO SENA
+  - Técnico: IGOR BATISTA SILVA -> Supervisor Sugerido: MARCOS ANTONIO BERNARDES DE AZEVEDO
+  - Técnico: ISMAEL CARLOS DA SILVA LANDIM -> Supervisor Sugerido: NÃO ATRELADO
+  - Técnico: JOAO PAULO ARAUJO SANT ANNA -> Supervisor Sugerido: LEONARDO DE OLIVEIRA CARNEIRO
+  - Técnico: JONATHAN ANDRE PEREIRA DOS ANJOS DA SILVA -> Supervisor Sugerido: MARCOS ANTONIO BERNARDES DE AZEVEDO
+  - Técnico: JONATHAN PERES DURAES -> Supervisor Sugerido: ALEX BRITO SOARES DE SOUZA
+  - Técnico: JONATHAS SANTOS DA CUNHA -> Supervisor Sugerido: JONATHAS SANTOS
+  - Técnico: LEONARDO MARCONDES ALVES -> Supervisor Sugerido: HENDRIX NONATO
+  - Técnico: JUNIOR DA SILVA FREITAS -> Supervisor Sugerido: JONATHAS SANTOS
+  - Técnico: LEANDRO BATISTA DO NASCIMENTO -> Supervisor Sugerido: WILLIAM GONZALES SOARES
+  - Técnico: LEONARDO GUILHERME DAS CHAGAS MEDEIROS -> Supervisor Sugerido: JONATHAS SANTOS
+  - Técnico: MICHAEL DOUGLAS ANSELMO DE ORNELLAS -> Supervisor Sugerido: JONATHAS SANTOS
+  - Técnico: LUIZ FERNANDES DE MELLO NETO -> Supervisor Sugerido: NÃO ENCONTRADO NO EXCEL
+  - Técnico: LUZINALDO DA SILVA RAMOS -> Supervisor Sugerido: HENDRIX NONATO
+  - Técnico: MAGNO RODRIGUES SILVA -> Supervisor Sugerido: LEONARDO DE OLIVEIRA CARNEIRO
+  - Técnico: MAICON MACIEL JESUS DOS SANTOS -> Supervisor Sugerido: HENDRIX NONATO
+  - Técnico: MARCELO FERREIRA DE BARROS -> Supervisor Sugerido: MARCOS ANTONIO BERNARDES DE AZEVEDO
+  - Técnico: WELLINGTON PICANCO DE OLIVEIRA -> Supervisor Sugerido: WILLIAM GONZALES SOARES
+  - Técnico: MARCOS PAULO DA COSTA CARDOSO -> Supervisor Sugerido: DECIO FERREIRA
+  - Técnico: MARCOS VINICIOS NETO MARTINS -> Supervisor Sugerido: JONATHAS SANTOS
+  - Técnico: MATHEUS DOS SANTOS OLIVEIRA -> Supervisor Sugerido: LEONARDO DE OLIVEIRA CARNEIRO
+  - Técnico: REGINALDO JOSE FERREIRA -> Supervisor Sugerido: MARCOS ANTONIO BERNARDES DE AZEVEDO
+  - Técnico: RODRIGO FERNANDEZ MATTOS DIAS -> Supervisor Sugerido: DECIO FERREIRA
+  - Técnico: ROMULO DE ALMEIDA CANDIDO -> Supervisor Sugerido: FELIPE GOMES PEREIRA
+  - Técnico: RONALDO SANTOS NASCIMENTO -> Supervisor Sugerido: DECIO FERREIRA
+  - Técnico: TALLIS FONTOURA GONCALVES -> Supervisor Sugerido: NÃO ENCONTRADO NO EXCEL
+  - Técnico: TERC - JUAN TEIXEIRA ALVES LIMA PEREIRA -> Supervisor Sugerido: NÃO ENCONTRADO NO EXCEL
+  - Técnico: TERC. PAULO ROBERTO NAPOLITANO -> Supervisor Sugerido: NÃO ATRELADO
+  - Técnico: VALDAIR PINHEIRO DE BRITTO -> Supervisor Sugerido: MARCOS ANTONIO BERNARDES DE AZEVEDO
+  - Técnico: WELINGTON CARMO DE SOUZA -> Supervisor Sugerido: HENDRIX NONATO
+  - Técnico: WILSON BARROS DA SILVA PRATA -> Supervisor Sugerido: NÃO ENCONTRADO NO EXCEL
+  - Técnico: ZAQUEU QUADROS DE FREITAS -> Supervisor Sugerido: MARCOS ANTONIO BERNARDES DE AZEVEDO
+Checking historico_wms_sp...
+Checking historico_wms_rj...
